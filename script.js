@@ -5,11 +5,14 @@
  **************/
 
 function updateCoffeeView(coffeeQty) {
-  // your code here
+  const coffeeCount = document.getElementById('coffee_counter');
+  coffeeCount.innerText = coffeeQty;
 }
 
 function clickCoffee(data) {
-  // your code here
+  data.coffee += 1;
+  updateCoffeeView(data.coffee);
+  renderProducers(data);
 }
 
 /**************
@@ -17,15 +20,29 @@ function clickCoffee(data) {
  **************/
 
 function unlockProducers(producers, coffeeCount) {
-  // your code here
+  producers.forEach((producer) => {
+    if (coffeeCount >= producer.price / 2) {
+      producer.unlocked = true;
+    }
+  });
 }
 
 function getUnlockedProducers(data) {
-  // your code here
+  return data.producers.filter((producer) => producer.unlocked);
 }
 
 function makeDisplayNameFromId(id) {
-  // your code here
+  const newId = id
+    .split('_')
+    .map((word) => {
+      return (
+        word.substring(0, 1).toUpperCase() + word.substring(1, word.length)
+      );
+    })
+    .join(' ');
+
+  id = newId;
+  return newId;
 }
 
 // You shouldn't need to edit this function-- its tests should pass once you've written makeDisplayNameFromId
@@ -50,11 +67,23 @@ function makeProducerDiv(producer) {
 }
 
 function deleteAllChildNodes(parent) {
-  // your code here
+  const parentChildrenArr = Array.from(parent.childNodes);
+
+  parentChildrenArr.forEach((child) => {
+    parent.removeChild(child);
+  });
 }
 
 function renderProducers(data) {
-  // your code here
+  unlockProducers(data.producers, data.coffee);
+
+  const divContainer = document.querySelector('#producer_container');
+  deleteAllChildNodes(divContainer);
+  const producers = getUnlockedProducers(data);
+
+  producers.forEach((producer) => {
+    divContainer.appendChild(makeProducerDiv(producer));
+  });
 }
 
 /**************
@@ -62,31 +91,61 @@ function renderProducers(data) {
  **************/
 
 function getProducerById(data, producerId) {
-  // your code here
+  return data.producers.find((producer) => producer.id === producerId);
 }
 
 function canAffordProducer(data, producerId) {
-  // your code here
+  const producer = getProducerById(data, producerId);
+
+  return data.coffee >= producer.price ? true : false;
 }
 
 function updateCPSView(cps) {
-  // your code here
+  const cpsElm = document.getElementById('cps');
+  cpsElm.innerText = cps;
 }
 
 function updatePrice(oldPrice) {
-  // your code here
+  return Math.floor(oldPrice * 1.25);
 }
 
 function attemptToBuyProducer(data, producerId) {
-  // your code here
+  const canAfford = canAffordProducer(data, producerId);
+
+  if (canAfford) {
+    const producer = getProducerById(data, producerId);
+    const newPrice = updatePrice(producer.price);
+
+    data.coffee -= producer.price;
+    producer.qty += 1;
+    producer.price = newPrice;
+    data.totalCPS += producer.cps;
+
+    updateCoffeeView(data.coffee);
+    updateCPSView(data.totalCPS);
+    return true;
+  } else {
+    return false;
+  }
 }
 
 function buyButtonClick(event, data) {
-  // your code here
+  if (event.target.tagName === 'BUTTON') {
+    const minusBuy = event.target.id.substring(4, event.target.id.length);
+
+    if (canAffordProducer(data, minusBuy)) {
+      attemptToBuyProducer(data, minusBuy);
+      renderProducers(data);
+    } else {
+      window.alert('Not enough coffee!');
+    }
+  }
 }
 
 function tick(data) {
-  // your code here
+  data.coffee += data.totalCPS;
+  updateCoffeeView(data.coffee);
+  renderProducers(data);
 }
 
 /*************************
@@ -115,7 +174,7 @@ if (typeof process === 'undefined') {
   // Add an event listener to the container that holds all of the producers
   // Pass in the browser event and our data object to the event listener
   const producerContainer = document.getElementById('producer_container');
-  producerContainer.addEventListener('click', event => {
+  producerContainer.addEventListener('click', (event) => {
     buyButtonClick(event, data);
   });
 
@@ -142,6 +201,6 @@ else if (process) {
     updatePrice,
     attemptToBuyProducer,
     buyButtonClick,
-    tick
+    tick,
   };
 }
