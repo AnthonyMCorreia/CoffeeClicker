@@ -1,4 +1,7 @@
 /* eslint-disable no-alert */
+//NOTE: Commit more often. Commiting and pushing to github often will 
+//save you if an accident happens and you lose all your work in your local repository
+//When the solution becomes available, Look it over there is a few places that you can steamline your code, if you want.
 
 /**************
  *   SLICE 1
@@ -132,7 +135,6 @@ function attemptToBuyProducer(data, producerId) {
 function buyButtonClick(event, data) {
   if (event.target.tagName === 'BUTTON') {
     const minusBuy = event.target.id.substring(4, event.target.id.length);
-
     if (canAffordProducer(data, minusBuy)) {
       attemptToBuyProducer(data, minusBuy);
       renderProducers(data);
